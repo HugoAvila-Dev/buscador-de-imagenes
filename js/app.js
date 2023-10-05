@@ -15,18 +15,18 @@ window.onload = () => {
 function validarFormulario(e) {
     e.preventDefault();
     const terminoBusqueda = document.querySelector('#termino').value;
-    
-    if(terminoBusqueda === '') {
+
+    if (terminoBusqueda === '') {
         mostrarAlerta('Agrega un término de búsqueda');
         return;
     }
     buscarImagenes();
 }
 
-function mostrarAlerta(mensaje) { 
+function mostrarAlerta(mensaje) {
 
     const alerta = document.querySelector('.bg-red-100');
-    if(!alerta) {
+    if (!alerta) {
         const alerta = document.createElement('P');
         alerta.classList.add('bg-red-100', 'border-red-400', 'text-red-700', 'px-4', 'py-3', 'rounded', 'max-w-lg', 'mx-auto', 'mt-6', 'text-center');
         alerta.innerHTML = `
@@ -34,7 +34,7 @@ function mostrarAlerta(mensaje) {
             <span class="block sm:inline">${mensaje}</span>
         `;
         formulario.appendChild(alerta);
-    
+
         setTimeout(() => {
             alerta.remove();
         }, 3000)
@@ -42,24 +42,33 @@ function mostrarAlerta(mensaje) {
 
 }
 
-function buscarImagenes() { 
+async function buscarImagenes() {
 
     const termino = document.querySelector('#termino').value;
 
     const key = '39644086-c11a80814f380f938c80e9699';
     const url = `https://pixabay.com/api/?key=${key}&q=${termino}&per_page=${registrosPorPagina}&page=${paginaActual}`;
-
-    fetch(url) 
-    .then(respuesta => respuesta.json())
-    .then( resultado => {
+    
+    // fetch(url)
+    //     .then(respuesta => respuesta.json())
+    //     .then( resultado => {
+    //         totalPaginas = calcularPaginas(resultado.totalHits);
+    //         mostrarImagenes(resultado.hits);
+    //     });
+    
+    try {
+        const respuesta = await fetch(url);
+        const resultado = await respuesta.json();
         totalPaginas = calcularPaginas(resultado.totalHits);
-        mostrarImagenes(resultado.hits)
-    })
+        mostrarImagenes(resultado.hits);
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 //Generador que va a buscar la cantidad de elementos de acuerdo a las paginas
-function *crearPaginador(total) {
-    for(let i = 1; i <= total; i++) {
+function* crearPaginador(total) {
+    for (let i = 1; i <= total; i++) {
         yield i;
     }
 }
@@ -70,12 +79,12 @@ function calcularPaginas(total) {
 
 function mostrarImagenes(imagenes) {
     console.log(imagenes)
-    while(resultado.firstChild) {
+    while (resultado.firstChild) {
         resultado.removeChild(resultado.firstChild);
     }
 
     //Iterar sobre el arreglo de imagenes y construir el HTML
-    imagenes.forEach( imagen => {
+    imagenes.forEach(imagen => {
         const { previewURL, likes, views, largeImageURL } = imagen;
 
         resultado.innerHTML += `
@@ -100,7 +109,7 @@ function mostrarImagenes(imagenes) {
     })
 
     // Limpiar el paginador previo
-    while(paginacionDiv.firstChild) {
+    while (paginacionDiv.firstChild) {
         paginacionDiv.removeChild(paginacionDiv.firstChild);
     }
 
@@ -110,10 +119,10 @@ function mostrarImagenes(imagenes) {
 function imprimirPaginador() {
     iterador = crearPaginador(totalPaginas);
 
-    while(true) {
-        const {value, done} = iterador.next();
+    while (true) {
+        const { value, done } = iterador.next();
 
-        if(done) return;
+        if (done) return;
 
         //Caso contrario, genera un botón por cada elemento en el generador
         const boton = document.createElement('A');
